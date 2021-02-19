@@ -68,7 +68,7 @@ for xml_file in os.listdir(DIRECTORY):
     # cv2.imshow('hi',frame)
     # cv2.waitKey(200)
 
-labels = [] #We will set '1' as label for image with helmet and '0' as label for image with no helmet
+labels = []
 img_data = []
 
 for i in HELMET:
@@ -85,24 +85,89 @@ for i in NO_HELMET:
 
 # print(labels.shape)
 
+#Since the labels is in string format performing one-hot enconding
+#importin LabelBinarizer
 from sklearn.preprocessing import LabelBinarizer
+from tensorflow.keras.utils import to_categorical
 lb = LabelBinarizer()
 labels = lb.fit_transform(labels)
 labels = to_categorical(labels)
 
+#converting to numpy array to pass it to the training model
 img_data=np.array(img_data,dtype="float32") # converting to numpy FORMAT
 labels = np.array(labels)
 
-
+#splitting our data into training data and validation data
 from sklearn.model_selection import train_test_split
 (trainX, testX, trainY, testY) = train_test_split(img_data, labels,
 	test_size=0.20, stratify=labels, random_state=42)
 
-# for i in HELMET:
-#     # print(i.shape)
-#     cv2.imshow('hi',i)
-#     cv2.waitKey(500)
+#This allows us to do generate similar images with different attributes
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+aug = ImageDataGenerator(
+	rotation_range=20,
+	zoom_range=0.15,
+	width_shift_range=0.2,
+	height_shift_range=0.2,
+	shear_range=0.15,
+	horizontal_flip=True,
+	fill_mode="nearest")
 
+
+from tensorflow.keras.applications import MobileNetV2
+baseModel = MobileNetV2(weights="imagenet", include_top=False,
+	input_tensor=tensorflow.keras.layers.Input(shape=(224, 224, 3)))
+
+
+#importing necessary models and optimizers for model
+from tensorflow.keras.layers import AveragePooling2D
+from tensorflow.keras.layers import Dropout
+from tensorflow.keras.layers import Flatten
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Input
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
+
+# construct the head of the model that will be placed on top of the
+# the base model
+headModel = baseModel.output
+headModel = AveragePooling2D(pool_size=(7, 7))(headModel)
+headModel = Flatten(name="flatten")(headModel)
+headModel = Dense(128, activation="relu")(headModel)
+headModel = Dropout(0.5)(headModel)
+headModel = Dense(2, activation="softmax")(headModel)
+
+
+model = Model(inputs=baseModel.input, outputs=headModel)
+
+for layer in baseModel.layers:
+	layer.trainable = False
+
+
+learning_rate = 1e-4
+epochs = 20
+batchsize = 32
+
+opt = Adam(lr=learning_rate, decay= learning_rate / epochs)
+model.compile(loss="binary_crossentropy", optimizer=opt,
+	metrics=["accuracy"])
+
+history=model.fit(aug.flow(trainX,trainY,batch_size=batchsize),
+                    steps_per_epoch=len(trainX)//batchsize,
+                    validation_data=(testX,testY),
+                    validation_steps=len(testX)//batchsize,
+                    epochs=epochs
+                   )
+
+import matplotlib.pyplot as plt
+plt.figure()
+plt.plot(np.arange(0,epochs),history.history["loss"],label="train_loss")
+plt.plot(np.arange(0,epochs),history.history["val_loss"],label="val_loss")
+plt.plot(np.arange(0,epochs),history.history["accuracy"],label="train_acc")
+plt.plot(np.arange(0,epochs),history.history["val_accuracy"],label="val_acc")
+plt.title("Results of training")
+plt.legend()
+plt.show()
 
 
 
