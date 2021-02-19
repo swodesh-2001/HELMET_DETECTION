@@ -68,34 +68,25 @@ for xml_file in os.listdir(DIRECTORY):
     # cv2.imshow('hi',frame)
     # cv2.waitKey(200)
 
-labels = []
+labels = [] #Helmet image will be labeled as 1 and non helmet will be labeled as 0
 img_data = []
 
 for i in HELMET:
     j = cv2.cvtColor(i,cv2.COLOR_BGR2RGB)
     j = tensorflow.keras.applications.mobilenet_v2.preprocess_input(j)
     img_data.append(j)
-    labels.append('HELMET')
+    labels.append(1.)
 
 for i in NO_HELMET:
     j = cv2.cvtColor(i,cv2.COLOR_BGR2RGB)
     j = tensorflow.keras.applications.mobilenet_v2.preprocess_input(j)
     img_data.append(j)
-    labels.append('NO_HELMET')
+    labels.append(0.)
 
-# print(labels.shape)
-
-#Since the labels is in string format performing one-hot enconding
-#importin LabelBinarizer
-from sklearn.preprocessing import LabelBinarizer
-from tensorflow.keras.utils import to_categorical
-lb = LabelBinarizer()
-labels = lb.fit_transform(labels)
-labels = to_categorical(labels)
 
 #converting to numpy array to pass it to the training model
-img_data=np.array(img_data,dtype="float32") # converting to numpy FORMAT
-labels = np.array(labels)
+img_data=np.array(img_data) # converting to numpy FORMAT
+labels = np.array([labels]).T
 
 #splitting our data into training data and validation data
 from sklearn.model_selection import train_test_split
@@ -135,7 +126,7 @@ headModel = AveragePooling2D(pool_size=(7, 7))(headModel)
 headModel = Flatten(name="flatten")(headModel)
 headModel = Dense(128, activation="relu")(headModel)
 headModel = Dropout(0.5)(headModel)
-headModel = Dense(2, activation="softmax")(headModel)
+headModel = Dense(1, activation="sigmoid")(headModel)
 
 
 model = Model(inputs=baseModel.input, outputs=headModel)
@@ -170,5 +161,5 @@ plt.legend()
 plt.show()
 
 
-
+model.save("trained_helmet.h5")
 cv2.destroyAllWindows()
