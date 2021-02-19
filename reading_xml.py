@@ -69,28 +69,41 @@ for xml_file in os.listdir(DIRECTORY):
     # cv2.waitKey(200)
 
 labels = [] #We will set '1' as label for image with helmet and '0' as label for image with no helmet
-target_size = (40,40)
 img_data = []
 
 for i in HELMET:
     j = cv2.cvtColor(i,cv2.COLOR_BGR2RGB)
     j = tensorflow.keras.applications.mobilenet_v2.preprocess_input(j)
     img_data.append(j)
-    labels.append(1)
+    labels.append('HELMET')
 
 for i in NO_HELMET:
     j = cv2.cvtColor(i,cv2.COLOR_BGR2RGB)
     j = tensorflow.keras.applications.mobilenet_v2.preprocess_input(j)
     img_data.append(j)
-    labels.append(0)
+    labels.append('NO_HELMET')
 
-img_data=np.array(img_data) # converting to numpy FORMAT
+# print(labels.shape)
+
+from sklearn.preprocessing import LabelBinarizer
+lb = LabelBinarizer()
+labels = lb.fit_transform(labels)
+labels = to_categorical(labels)
+
+img_data=np.array(img_data,dtype="float32") # converting to numpy FORMAT
 labels = np.array(labels)
-print(labels.shape)
+
+
+from sklearn.model_selection import train_test_split
+(trainX, testX, trainY, testY) = train_test_split(img_data, labels,
+	test_size=0.20, stratify=labels, random_state=42)
 
 # for i in HELMET:
 #     # print(i.shape)
 #     cv2.imshow('hi',i)
 #     cv2.waitKey(500)
+
+
+
 
 cv2.destroyAllWindows()
