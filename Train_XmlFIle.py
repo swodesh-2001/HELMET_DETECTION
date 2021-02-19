@@ -134,7 +134,7 @@ model = Model(inputs=baseModel.input, outputs=headModel)
 for layer in baseModel.layers:
 	layer.trainable = False
 
-
+#Initializing different parameters
 learning_rate = 1e-4
 epochs = 20
 batchsize = 32
@@ -160,6 +160,6 @@ plt.title("RESULT")
 plt.legend()
 plt.show()
 
-
+#Saving our model
 model.save("trained_helmet.h5")
 cv2.destroyAllWindows()
