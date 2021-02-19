@@ -156,7 +156,7 @@ plt.plot(np.arange(0,epochs),history.history["loss"],label="train_loss")
 plt.plot(np.arange(0,epochs),history.history["val_loss"],label="val_loss")
 plt.plot(np.arange(0,epochs),history.history["accuracy"],label="train_acc")
 plt.plot(np.arange(0,epochs),history.history["val_accuracy"],label="val_acc")
-plt.title("Results of training")
+plt.title("RESULT")
 plt.legend()
 plt.show()
 
