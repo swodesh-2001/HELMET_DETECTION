@@ -53,29 +53,33 @@ for xml_file in os.listdir(DIRECTORY):
                 ymin = int(i.find('ymin').text)
 
             if Switch == 'With Helmet':
-                HELMET.append(frame[ymin:ymax,xmin:xmax])
+                temp = frame[ymin:ymax,xmin:xmax]
+                if temp.shape[0] != 0 and temp.shape[1] != 0 :
+                    temp = cv2.resize(temp,(224,224))
+                    HELMET.append(temp)
                 # print('Added 1 image to HELMET LIST')
             else:
-                NO_HELMET.append(frame[ymin:ymax,xmin:xmax])
+                temp = frame[ymin:ymax,xmin:xmax]
+                if temp.shape[0] != 0 and temp.shape[1] != 0 :
+                    temp = cv2.resize(temp,(224,224))
+                    NO_HELMET.append(temp)
                 # print('Added 1 image to NO_HELMET LIST')
     #     showBox(frame,xmin,ymin,xmax,ymax,Switch)
     # cv2.imshow('hi',frame)
     # cv2.waitKey(200)
 
 labels = [] #We will set '1' as label for image with helmet and '0' as label for image with no helmet
-target_size = (224,224)
+target_size = (40,40)
 img_data = []
 
 for i in HELMET:
-    j = cv2.resize(i,target_size)
-    j = cv2.cvtColor(j,cv2.COLOR_BGR2RGB)
+    j = cv2.cvtColor(i,cv2.COLOR_BGR2RGB)
     j = tensorflow.keras.applications.mobilenet_v2.preprocess_input(j)
     img_data.append(j)
     labels.append(1)
 
 for i in NO_HELMET:
-    j = cv2.resize(i,target_size)
-    j = cv2.cvtColor(j,cv2.COLOR_BGR2RGB)
+    j = cv2.cvtColor(i,cv2.COLOR_BGR2RGB)
     j = tensorflow.keras.applications.mobilenet_v2.preprocess_input(j)
     img_data.append(j)
     labels.append(0)
@@ -84,6 +88,9 @@ img_data=np.array(img_data) # converting to numpy FORMAT
 labels = np.array(labels)
 print(labels.shape)
 
-
+# for i in HELMET:
+#     # print(i.shape)
+#     cv2.imshow('hi',i)
+#     cv2.waitKey(500)
 
 cv2.destroyAllWindows()
