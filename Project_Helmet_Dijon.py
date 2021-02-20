@@ -5,7 +5,7 @@ from tensorflow import keras
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 model=keras.models.load_model('helmet.h5')
 
-shoulder_cascade = cv2.CascadeClassifier('casscades\haarcascade_upperbody.xml')
+shoulder_cascade = cv2.CascadeClassifier('haarcascade_upperbody.xml')
 my_vid = cv2.VideoCapture('test.mp4')
 while True:
     ret,frame = my_vid.read()
