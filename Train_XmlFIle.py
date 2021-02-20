@@ -160,6 +160,5 @@ plt.title("RESULT")
 plt.legend()
 plt.show()
 
-#Saving our model
-model.save("trained_helmet.h5")
+model.save("helmet.h5")
 cv2.destroyAllWindows()
